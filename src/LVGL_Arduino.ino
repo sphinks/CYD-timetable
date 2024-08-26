@@ -48,10 +48,6 @@ LV_FONT_DECLARE(full_font_5);
 #define WIND_SYMBOL "\xEF\x9C\xAE"
 #define TEMP_SYMBOL "\xEF\x8B\x88"
 
-//------- Replace the following! ------
-char ssid[] = "WIFI network ssid";       // your network SSID (name)
-char password[] = "WIFI password";  // your network key
-
 // For HTTPS requests
 WiFiClient client;
 
@@ -59,7 +55,6 @@ WiFiClient client;
 float brightness_percent = 1.0;
 
 lv_indev_t * indev; //Touchscreen input device
-// uint8_t* draw_buf;  //draw_buf is allocated on heap otherwise the static area is too big on ESP32 at compile
 uint32_t lastTick = 0;  //Used to track the tick timer
 uint32_t lastHTTPTick = 0;  //Used to track the tick timer
 uint32_t lastHTTPWeatherTick = 0;  //Used to track the tick timer
@@ -79,18 +74,12 @@ std::string* departures;
 std::string* weather;
 
 // visual
-
-// static lv_obj_t * tv;
-// static lv_obj_t * calendar;
-static lv_style_t style_text_muted;
 static lv_style_t style_title;
 static lv_style_t style_container;
 static lv_style_t style_icon;
-static lv_style_t style_bullet;
 
 static const lv_font_t * font_large;
 static const lv_font_t * font_normal;
-static const lv_font_t * weather_font;
 
 /* DEFINE FUNCTIONS*/
 static void profile_create(lv_obj_t * parent, char * dep1, char * dep2);
@@ -149,10 +138,6 @@ void my_touchpad_read( lv_indev_drv_t * indev_drv, lv_indev_data_t * data )
         data->point.y = map(p.y,touchScreenMinimumY,touchScreenMaximumY,1,screenHeight); /* Touchscreen Y calibration */
         data->state = LV_INDEV_STATE_PR;
 
-        //Serial.print( "Touch x " );
-        //Serial.print( data->point.x );
-        //Serial.print( " y " );
-        //Serial.println( data->point.y );
         ledcAnalogWrite(LEDC_CHANNEL_0, 255);
         lastBrightnessTick = millis();
         wasDimmed = 0;
@@ -390,13 +375,10 @@ void setup()
   touchscreen.setRotation(1); /* Landscape orientation */
 
   tft.begin();          /* TFT init */
-  //tft.invertDisplay(1);
   tft.setRotation( 1 ); /* Landscape orientation */
 
   lv_theme_t * th = lv_theme_basic_init(lv_disp_get_default());
   lv_disp_set_theme(NULL, th);
-
-  // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_PART_INDICATOR | LV_STATE_FOCUSED);
 
   lv_disp_draw_buf_init( &draw_buf, buf, NULL, screenWidth * screenHeight / 10 );
 
@@ -438,7 +420,7 @@ void setup()
   }
   Serial.println("");
   Serial.print("Connected to ");
-  Serial.println(ssid);
+  Serial.println(WIFI_SSID);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -522,9 +504,6 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     lv_style_set_border_width(&style_icon, 0);
     lv_style_set_text_font(&style_icon, font_large);
 
-    Serial.println("Done init styles ");
-
-
     lv_obj_t * row1 = lv_obj_create(lv_scr_act());
     lv_obj_set_size(row1, 320, 240);
     lv_obj_center(row1);
@@ -549,8 +528,6 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     lv_label_set_text(label, depatures[0].c_str());
     lv_obj_center(label);
 
-    Serial.println("Done draw 1 row ");
-
     // ROW 2
     obj = lv_obj_create(row1);
     lv_obj_set_size(obj, 60, LV_SIZE_CONTENT);
@@ -566,12 +543,6 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     lv_obj_set_size(obj, 220, LV_SIZE_CONTENT);
     lv_obj_add_style(obj, &style_container, 0);
     Serial.println("Done draw 2.1 obj ");
-    if (obj == NULL) {
-      Serial.println("Error: obj is NULL");
-      return;
-    } else {
-        Serial.println("obj is valid");
-    }
     Serial.print("Get free heap before creating label: ");
     Serial.println(ESP.getFreeHeap());
     label = lv_label_create(obj);
@@ -597,8 +568,6 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     label = lv_label_create(obj);
     lv_label_set_text(label, depatures[2].c_str());
     lv_obj_center(label);
-
-    Serial.println("Done draw 3 row ");
 
     // Row 4 Weather
     
