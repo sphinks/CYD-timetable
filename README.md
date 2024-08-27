@@ -4,7 +4,7 @@ Firmware for Cheap Yellow Display (ESP 32) to show next subway trains from desir
 ## Components
 
 - CYD based on ESP32
-- 3D Printed case
+- [3D Printed case](https://www.printables.com/model/685845-enclosure-for-sunton-esp32-2432s028r-cheap-yellow-)
 - 4 threaded inserts
 - 4 screws
 
