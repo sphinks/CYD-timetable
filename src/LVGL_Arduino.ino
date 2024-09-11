@@ -61,6 +61,8 @@ uint32_t lastHTTPWeatherTick = 0;  //Used to track the tick timer
 uint32_t lastBrightnessTick = 0;  //Used to track the tick timer
 uint16_t wasDimmed = 0;
 
+bool isInitRun = true;
+
 /*Change to your screen resolution*/
 static const uint16_t screenWidth  = 320;
 static const uint16_t screenHeight = 240;
@@ -77,6 +79,24 @@ std::string* weather;
 static lv_style_t style_title;
 static lv_style_t style_container;
 static lv_style_t style_icon;
+
+lv_obj_t * container_1_1;
+lv_obj_t * container_1_2;
+lv_obj_t * container_2_1;
+lv_obj_t * container_2_2;
+lv_obj_t * container_3_1;
+lv_obj_t * container_3_2;
+lv_obj_t * container_4_1;
+lv_obj_t * container_4_2;
+lv_obj_t * label_1_1;
+lv_obj_t * label_1_2;
+lv_obj_t * label_2_1;
+lv_obj_t * label_2_2;
+lv_obj_t * label_3_1;
+lv_obj_t * label_3_2;
+lv_obj_t * label_4_1;
+lv_obj_t * label_4_2;
+lv_obj_t * mainArea;
 
 static const lv_font_t * font_large;
 static const lv_font_t * font_normal;
@@ -148,7 +168,68 @@ void my_touchpad_read( lv_indev_drv_t * indev_drv, lv_indev_data_t * data )
     }
 }
 
+// std::string* makeHTTPRequest(LoggingStream loggingClient) {
+//   // Opening connection to server (Use 80 as port if HTTP)
+//   if (!client.connect(WEATHER_HOST, 80))
+//   {
+//     Serial.println(F("Connection failed"));
+//     return nullptr;
+//   }
 
+//   client.setTimeout(5000);
+
+//   // give the esp a breather
+//   yield();
+
+//   // Send HTTP request
+//   loggingClient.print(F("GET "));
+//   // This is the second half of a request (everything that comes after the base URL)
+//   loggingClient.print("/v1/current.json?key=");
+//   loggingClient.print(WEATHER_API_KEY);
+//   loggingClient.print("&q=Stockholm&aqi=no"); 
+//   loggingClient.println(F(" HTTP/1.1"));
+
+//   //Headers
+//   loggingClient.print(F("Host: "));
+//   loggingClient.println(WEATHER_HOST);
+
+//   loggingClient.println(F("Cache-Control: no-cache"));
+
+//   if (client.println() == 0)
+//   {
+//     Serial.println(F("Failed to send request"));
+//     return nullptr;
+//   }
+//   delay(100);
+//   // Check HTTP status
+//   char status[32] = {0};
+//   client.readBytesUntil('\r', status, sizeof(status));
+//   if (strcmp(status, "HTTP/1.1 200 OK") != 0)
+//   {
+//     Serial.print(F("Unexpected response: "));
+//     Serial.println(status);
+//     return nullptr;
+//   }
+
+//   // Skip HTTP headers
+//   char endOfHeaders[] = "\r\n\r\n";
+//   if (!client.find(endOfHeaders))
+//   {
+//     Serial.println(F("Invalid response"));
+//     return nullptr;
+//   }
+
+//   while (client.available() && client.peek() != '{')
+//   {
+//     char c = 0;
+//     loggingClient.readBytes(&c, 1);
+//     Serial.println("BAD");
+//   }
+
+//   JsonDocument doc; //For ESP32/ESP8266 you'll mainly use dynamic.
+//   ReadLoggingStream loggingStream(client, Serial);
+//   return " ";
+// }
 
 std::string* makeTrafficRequest() {
 
@@ -483,8 +564,8 @@ void loop()
 
 void sl_metro_widget(std::string* depatures, std::string* weather_data)
 {
-    Serial.print("Free heap before processing: ");
-    Serial.println(ESP.getFreeHeap());
+    // Serial.print("Free heap before processing: ");
+    // Serial.println(ESP.getFreeHeap());
     font_large = &full_font_5;
     font_normal = &full_font_5;
 
@@ -504,70 +585,82 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     lv_style_set_border_width(&style_icon, 0);
     lv_style_set_text_font(&style_icon, font_large);
 
-    lv_obj_t * row1 = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(row1, 320, 240);
-    lv_obj_center(row1);
-    lv_obj_set_flex_flow(row1, LV_FLEX_FLOW_ROW_WRAP);
+    if (isInitRun) {
+      mainArea = lv_obj_create(lv_scr_act());
+      lv_obj_set_size(mainArea, 320, 240);
+      lv_obj_center(mainArea);
+      lv_obj_set_flex_flow(mainArea, LV_FLEX_FLOW_ROW_WRAP);
 
-    lv_obj_t * obj;
-    lv_obj_t * label;
+      //row 1
+      container_1_1 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_1_1, 60, LV_SIZE_CONTENT);
+      label_1_1 = lv_label_create(container_1_1);
+      lv_obj_add_style(label_1_1, &style_title, 0);
+      lv_obj_set_style_bg_color(container_1_1, lv_color_make(0, 255, 255), 0);
+      lv_obj_center(label_1_1);
 
+      container_1_2 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_1_2, 220, LV_SIZE_CONTENT);
+      lv_obj_add_style(container_1_2, &style_container, 0);
+      label_1_2 = lv_label_create(container_1_2);
+      lv_obj_center(label_1_2);
+
+      // row 2
+      container_2_1 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_2_1, 60, LV_SIZE_CONTENT);
+      label_2_1 = lv_label_create(container_2_1);
+      lv_obj_add_style(label_2_1, &style_title, 0);
+      lv_obj_set_style_bg_color(container_2_1, lv_color_make(0, 255, 255), 0);
+      lv_obj_center(label_2_1);
+
+      container_2_2 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_2_2, 220, LV_SIZE_CONTENT);
+      lv_obj_add_style(container_2_2, &style_container, 0);
+      label_2_2 = lv_label_create(container_2_2);
+      lv_obj_center(label_2_2);
+
+      // row 3
+      container_3_1 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_3_1, 60, LV_SIZE_CONTENT);
+      label_3_1 = lv_label_create(container_3_1);
+      lv_obj_add_style(label_3_1, &style_title, 0);
+      lv_obj_set_style_bg_color(container_3_1, lv_color_make(0, 255, 255), 0);
+      lv_obj_center(label_3_1);
+
+      container_3_2 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_3_2, 220, LV_SIZE_CONTENT);
+      lv_obj_add_style(container_3_2, &style_container, 0);
+      label_3_2 = lv_label_create(container_3_2);
+      lv_obj_center(label_3_2);
+
+      // row 4
+      container_4_1 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_4_1, 140, LV_SIZE_CONTENT);
+      lv_obj_add_style(container_4_1, &style_icon, 0);
+      label_4_1 = lv_label_create(container_4_1);
+
+      container_4_2 = lv_obj_create(mainArea);
+      lv_obj_set_size(container_4_2, 140, LV_SIZE_CONTENT);
+      lv_obj_add_style(container_4_2, &style_icon, 0);
+      label_4_2 = lv_label_create(container_4_2);
+
+      isInitRun = false;
+
+    }
+    
     // ROW 1
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 60, LV_SIZE_CONTENT);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, "T14");
-    lv_obj_add_style(label, &style_title, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_make(0, 255, 255), 0);
-    lv_obj_center(label);
-
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 220, LV_SIZE_CONTENT);
-    lv_obj_add_style(obj, &style_container, 0);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, depatures[0].c_str());
-    lv_obj_center(label);
+    lv_label_set_text(label_1_1, "T14");
+    lv_label_set_text(label_1_2, depatures[0].c_str());
 
     // ROW 2
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 60, LV_SIZE_CONTENT);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, "T14");
-    lv_obj_add_style(label, &style_title, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_make(0, 255, 255), 0);
-    lv_obj_center(label);
-
+    lv_label_set_text(label_2_1, "T14");
     Serial.println("Done draw 2.1 row ");
-
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 220, LV_SIZE_CONTENT);
-    lv_obj_add_style(obj, &style_container, 0);
-    Serial.println("Done draw 2.1 obj ");
-    Serial.print("Get free heap before creating label: ");
-    Serial.println(ESP.getFreeHeap());
-    label = lv_label_create(obj);
-    Serial.println("Done label");
-    lv_label_set_text(label, depatures[1].c_str());
-    Serial.println("Set text");
-    lv_obj_center(label);
-
+    lv_label_set_text(label_2_2, depatures[1].c_str());
     Serial.println("Done draw 2 row ");
 
     // ROW 3
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 60, LV_SIZE_CONTENT);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, "T14");
-    lv_obj_add_style(label, &style_title, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_make(0, 255, 255), 0);
-    lv_obj_center(label);
-
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 220, LV_SIZE_CONTENT);
-    lv_obj_add_style(obj, &style_container, 0);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, depatures[2].c_str());
-    lv_obj_center(label);
+    lv_label_set_text(label_3_1, "T14");
+    lv_label_set_text(label_3_2, depatures[2].c_str());
 
     // Row 4 Weather
     
@@ -577,23 +670,14 @@ void sl_metro_widget(std::string* depatures, std::string* weather_data)
     std::string wind_str = WIND_SYMBOL;
     wind_str += " " + weather_data[2];
 
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 140, LV_SIZE_CONTENT);
-    lv_obj_add_style(obj, &style_icon, 0);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, temp_str.c_str());
-
-    obj = lv_obj_create(row1);
-    lv_obj_set_size(obj, 140, LV_SIZE_CONTENT);
-    lv_obj_add_style(obj, &style_icon, 0);
-    label = lv_label_create(obj);
-    lv_label_set_text(label, wind_str.c_str());
+    lv_label_set_text(label_4_1, temp_str.c_str());
+    lv_label_set_text(label_4_2, wind_str.c_str());
 
     Serial.println("Done draw weather row ");
 
-    Serial.print("Free heap after processing: ");
-    Serial.println(ESP.getFreeHeap());
-    Serial.println("sl_metro_widget: End");
+    // Serial.print("Free heap after processing: ");
+    // Serial.println(ESP.getFreeHeap());
+    // Serial.println("sl_metro_widget: End");
     
     
 }
